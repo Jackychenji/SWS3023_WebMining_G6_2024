@@ -110,27 +110,23 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
 }
 login_response = login()
-# 检查是否登录成功
+
 if 'incorrect' not in login_response.text:
-    for i in range(50, 40, -1):
-        # TODO:换成你的对应的用户的CSV
-        df = pd.read_csv(f'users/subframe_{i}.csv')
-        names = df["user"].values
-        names = set(names)
+    df = pd.read_csv(f'Valid_NoDuplicate_djl.csv')
+    names = df["user"].values
+    names = set(names)
 
-        all_data = []
+    all_data = []
 
-        for name in names:
-            getOnePerson(name)
-
-        # 创建结果文件夹（如果不存在）
+    for name in names:
+        getOnePerson(name)
         result_dir = 'result'
         if not os.path.exists(result_dir):
             os.makedirs(result_dir)
 
         # 保存结果到CSV文件
         result_df = pd.DataFrame(all_data)
-        result_df.to_csv(f'{result_dir}/subframe_{i}.csv', index=False)
-        print("Finished")
+        result_df.to_csv(f'{result_dir}/{name}.csv', index=False)
+        print("{} Finished".format(name))
 else:
     print('登录失败，请检查用户名和密码')
