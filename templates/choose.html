@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>lastfm数据分析</title>
+    </head>
+    <body>
+        <div id="guard">
+            <audio id="audio_player" controls="controls" height="100" width="100">
+                <source src="{{ url_for('static', filename='assets/audio/1.mp3') }}" type="audio/mp3" />
+                <source src="{{ url_for('static', filename='assets/audio/2.mp3') }}" type="audio/mp3" />
+                <source src="{{ url_for('static', filename='assets/audio/3.mp3') }}" type="audio/mp3" />
+            </audio>
+        </div>
+        <div id="choise">
+            <button type="button" id="button_1" data-feedback="1">A&nbsp; like</button>
+            <button type="button" id="button_2" data-feedback="0">B&nbsp; just&nbsp; so&nbsp; so</button>
+            <button type="button" id="button_3" data-feedback="-1">C&nbsp; dislike</button>
+         </div>
+        <div id="end">
+            <button type="button">查看结果</button>
+        </div>
+    </body>
+<script>
+    let guard = document.getElementById("guard");
+    let button_1 = document.getElementById("button_1");
+    let button_2 = document.getElementById("button_2");
+    let button_3 = document.getElementById("button_3");
+    let num = 0;
+    
+    const buttons = document.querySelectorAll('#choise button');
+    const audioPlayer = document.getElementById('audio_player');
+    const viewResultBtn = document.getElementById('end')
+
+    buttons.forEach(button => {
+    button.addEventListener('click', function() {
+        const feedback = this.getAttribute('data-feedback');
+        console.log(feedback)
+        const audioSrc = audioPlayer.querySelector('source').src;
+        console.log(audioSrc)
+
+        fetch('/choose', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                feedback: feedback,
+                audioSrc: audioSrc
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            num++;
+            console.log(num)
+            if (num > 10) {
+                viewResultBtn.style.display = 'inline-block'; // Show the button
+            }
+            // 这里可以处理返回的数据，例如更新页面
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+});
+    </script>
+
+<style>
+    #guard{
+        position: absolute;
+        left: 680px;
+        top: 360px;
+        font-size: 25px;
+    }
+    #choise{
+        position: absolute;
+        left: 500px;
+        top: 450px;
+    }
+    #button_1{
+        position: absolute;
+        left: 60px;
+        top: 30px;
+    }
+    #button_2{
+        position: absolute;
+        left: 260px;
+        top: 30px;
+    }
+    #button_3{
+        position: absolute;
+        left: 460px;
+        top: 30px;
+    }
+    button{
+        height: 70px;
+        width: 150px;
+        font-size: 20px;
+    }
+    #end{
+        position: absolute;
+        left: 760px;
+        top: 600px;
+        display: none;
+    }
+</style>
+</html>
