@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-import sqlite3
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -11,9 +11,7 @@ def index():
 
 @app.route('/index')
 def home():
-    # return render_template("index.html")
     return index()
-
 
 
 @app.route('/music', methods=['GET', 'POST'])
@@ -24,36 +22,13 @@ def music():
         print(data)
         account_data = data.get('account_data')
         print(f"Received account data: {account_data}")
-        music_data = [
-            {
-                'name': 'Song A',
-                'url': 'http://example.com/song_a',
-                'artist': 'Artist A',
-                'listeners': 12345,
-                'release_date': '2023-01-01',
-                'tracks': 10,
-                'tag': 'pop'
-            },
-            {
-                'name': 'Song B',
-                'url': 'http://example.com/song_b',
-                'artist': 'Artist B',
-                'listeners': 54321,
-                'release_date': '2023-02-01',
-                'tracks': 12,
-                'tag': 'rock'
-            },
-            {
-                'name': 'Song C',
-                'url': 'http://example.com/song_c',
-                'artist': 'Artist C',
-                'listeners': 67890,
-                'release_date': '2023-03-01',
-                'tracks': 8,
-                'tag': 'jazz'
-            }
-        ]
 
+        # 从CSV文件中读取数据
+        df = pd.read_csv('music_data.csv')
+
+        # 假设你根据某些逻辑处理数据，例如这里简单地返回前3条数据
+        music_data = df.head(3).to_dict(orient='records')
+        
         return jsonify(success=True, music_data=music_data)
     return render_template("music.html")
 
@@ -71,10 +46,5 @@ def choose():
     return render_template("choose.html")
 
 
-@app.route('/team')
-def team():
-    return render_template("team.html")
-
-
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

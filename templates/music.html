@@ -6,64 +6,92 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>lastfm数据分析</title>
     <style>
+        body {
+            background-image: url('../static/assets/img/about.jpg'); /* 替换为你的背景图片URL */
+            background-size: cover; /* 使背景图片覆盖整个页面 */
+            background-repeat: no-repeat; /* 防止背景图片重复 */
+            background-position: center; /* 背景图片居中 */
+        }
+
         #search1 {
             position: absolute;
             left: 500px;
             top: 90px;
         }
+
         #search_id {
             height: 50px;
             width: 600px;
             font-size: 20px;
             border-radius: 15px;
         }
+
         #search_flag {
             position: absolute;
             left: 520px;
             top: 6px;
         }
+
         #search_button {
             height: 43px;
             width: 80px;
             font-size: 20px;
             border-radius: 10px;
         }
+
         #show {
             position: absolute;
-            left: 500px;
-            top: 500px;
+            left: 50%; /* 将左侧位置设为50% */
+            transform: translateX(-50%); /* 使用transform属性来将元素向左移动自身宽度的一半，实现自动居中 */
+            top: 200px;
             font-size: 20px;
+            max-width: 1400px; /* 使用max-width而不是width，确保内容不会超出屏幕 */
+            background-color: wheat; /* 白色背景 */
+            padding: 20px; /* 添加一些内边距，使内容更好看 */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
         }
+
+
         .header {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 80px;
             padding: 10px;
             font-weight: bold;
             border-bottom: 2px solid #000;
             display: none; /* 初始状态下不可见 */
         }
+
         li {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr; /* 将每个li分成三列 */
+            grid-template-columns: 1fr 1fr 1fr 1fr;
             gap: 80px; /* 设置列之间的间距 */
             border: 0px solid #ccc;
             padding: 10px;
             margin-bottom: 10px;
             cursor: pointer; /* 添加手型鼠标指针 */
         }
+
         li:hover {
             background-color: #f0f0f0; /* 鼠标悬停时的背景颜色 */
         }
+
         .item-name {
             grid-column: 1 / 2; /* 占据第一列 */
         }
+
         .item-artist {
             grid-column: 2 / 3; /* 占据第二列 */
         }
+
         .item-tag {
             grid-column: 3 / 4; /* 占据第三列 */
         }
+
+        .item-release-date {
+            grid-column: 4 / 5; /* 占据第四列 */
+        }
+
         .tooltip {
             display: none;
             position: absolute;
@@ -73,46 +101,48 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             font-size: 10px;
         }
+
         li:hover .tooltip {
             display: block;
         }
     </style>
 </head>
 <body>
-    <div id="search1">
-        <input type="text" id="search_id" placeholder="搜索">
-        <div id="search_flag">
-            <button id="search_button">搜索</button>
-        </div>
+<div id="search1">
+    <input type="text" id="search_id" placeholder="搜索">
+    <div id="search_flag">
+        <button id="search_button">搜索</button>
     </div>
-    <div id="show">
-        <div class="header">
-            <div>&nbsp;&nbsp;&nbsp;&nbsp;Name</div>
-            <div>&nbsp;&nbsp;&nbsp;Artist</div>
-            <div>&nbsp;Tag</div>
-        </div>
-        <ul id="musicList">
-            <!-- Placeholder for dynamically added list items -->
-        </ul>
+</div>
+<div id="show">
+    <div class="header">
+        <div>&nbsp;&nbsp;&nbsp;&nbsp;Name</div>
+        <div>&nbsp;&nbsp;&nbsp;Artist</div>
+        <div>&nbsp;Tag</div>
+        <div>Release Date</div>
     </div>
-    <script>
-        const account_id = document.getElementById('search_id');
-        const submit = document.getElementById('search_button');
-        const musicListElement = document.getElementById('musicList');
-        const headerElement = document.querySelector('.header');
+    <ul id="musicList">
+        <!-- Placeholder for dynamically added list items -->
+    </ul>
+</div>
+<script>
+    const account_id = document.getElementById('search_id');
+    const submit = document.getElementById('search_button');
+    const musicListElement = document.getElementById('musicList');
+    const headerElement = document.querySelector('.header');
 
-        submit.addEventListener('click', function() {
-            musicListElement.innerHTML = '';
+    submit.addEventListener('click', function () {
+        musicListElement.innerHTML = '';
 
-            const account_data = account_id.value;
-            if (account_data.length === 10 && /^\d+$/.test(account_data)) {
-                fetch('/music', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ account_data: account_data })
-                })
+        const account_data = account_id.value;
+        if (account_data.length === 10 && /^\d+$/.test(account_data)) {
+            fetch('/music', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({account_data: account_data})
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Success:', data);
@@ -127,7 +157,7 @@
                         itemName.classList.add('item-name');
                         itemName.textContent = `${item.name}`;
                         // 设置点击事件处理函数
-                        itemName.addEventListener('click', function() {
+                        itemName.addEventListener('click', function () {
                             window.location.href = item.url; // 跳转到对应的 url
                         });
                         li.appendChild(itemName);
@@ -142,13 +172,18 @@
                         itemTag.textContent = `${item.tag}`;
                         li.appendChild(itemTag);
 
+                        const itemDate = document.createElement('div');
+                        itemDate.classList.add('item-date');
+                        itemDate.textContent = `${item.release_date}`;
+                        li.appendChild(itemDate);
+
                         // 创建 tooltip
                         const tooltip = document.createElement('div');
                         tooltip.classList.add('tooltip');
                         tooltip.textContent = `Name: ${item.name}\nArtist: ${item.artist}\nTag: ${item.tag}\nRelease_date: ${item.release_date}`;
                         li.appendChild(tooltip);
 
-                        li.addEventListener('hover', function(event) {
+                        li.addEventListener('hover', function (event) {
                             tooltip.style.left = event.clientX + 'px';
                             tooltip.style.top = event.clientY + 'px';
                         });
@@ -159,10 +194,10 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
-            } else {
-                alert('请输入10位数字账号！');
-            }
-        });
-    </script>
+        } else {
+            alert('请输入10位数字账号！');
+        }
+    });
+</script>
 </body>
 </html>
