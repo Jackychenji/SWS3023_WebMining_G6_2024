@@ -4,18 +4,128 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>lastfm数据分析</title>
+    <title>lastfm Data Analysis</title>
     <style>
+        header {
+            background-color: #11375e; /* 背景颜色 */
+            color: #333; /* 文字颜色 */
+            padding: 20px; /* 内边距 */
+            text-align: center; /* 文字居中对齐 */
+            font-size: 24px; /* 字体大小 */
+            border-bottom: 1px solid #dee2e6; /* 底部边框 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+        }
+
+        .center-text {
+            text-align: center; /* 水平居中对齐文本 */
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background-color: #488ABC;
+            }
+            33% {
+                background-color: #347AE3;
+            }
+            66% {
+                background-color: #8753EF;
+            }
+            100% {
+                background-color: #347AE3;
+            }
+        }
+
         body {
-            background-image: url('../static/assets/img/about.jpg'); /* 替换为你的背景图片URL */
-            background-size: cover; /* 使背景图片覆盖整个页面 */
-            background-repeat: no-repeat; /* 防止背景图片重复 */
-            background-position: center; /* 背景图片居中 */
+            animation: backgroundAnimation 3s infinite;
+        }
+
+
+        input {
+            margin: 20px;
+            width: 6.5em;
+            color: white;
+            font-size: inherit;
+            font-family: inherit;
+            background-color: hsl(236, 32%, 26%);
+            padding: 0.35em 0.45em;
+            border: 1px solid transparent;
+            transition: background-color 0.3s ease-in-out;
+        }
+
+        input:focus {
+            outline: none;
+        }
+
+        input::placeholder {
+            color: hsla(0, 0%, 100%, 0.6);
+        }
+
+        span {
+            position: absolute;
+            background-color: #3cefff;
+            transition: transform 0.5s ease;
+        }
+
+        .bottom,
+        .top {
+            height: 1px;
+            left: 0;
+            right: 0;
+            transform: scaleX(0);
+        }
+
+        .left,
+        .right {
+            width: 1px;
+            top: 0;
+            bottom: 0;
+            transform: scaleY(0);
+        }
+
+        .bottom {
+            bottom: 0;
+            transform-origin: bottom right;
+        }
+
+        input:focus ~ .bottom {
+            transform-origin: bottom left;
+            transform: scaleX(1);
+        }
+
+        .right {
+            right: 0;
+            transform-origin: top right;
+        }
+
+        input:focus ~ .right {
+            transform-origin: bottom right;
+            transform: scaleY(1);
+        }
+
+        .top {
+            top: 0;
+            transform-origin: top left;
+        }
+
+        input:focus ~ .top {
+            transform-origin: top right;
+            transform: scaleX(1);
+        }
+
+        .left {
+            left: 0;
+            transform-origin: bottom left;
+        }
+
+        input:focus ~ .left {
+            transform-origin: top left;
+            transform: scaleY(1);
         }
 
         #search1 {
             position: absolute;
-            left: 500px;
+            left: 50%;
+            transform: translateX(-50%);
             top: 90px;
         }
 
@@ -26,70 +136,73 @@
             border-radius: 15px;
         }
 
-        #search_flag {
-            position: absolute;
-            left: 520px;
-            top: 6px;
-        }
-
         #search_button {
-            height: 43px;
-            width: 80px;
+            height: 60px;
+            width: 100px;
             font-size: 20px;
             border-radius: 10px;
+            margin-left: 10px;
         }
 
         #show {
             position: absolute;
-            left: 50%; /* 将左侧位置设为50% */
-            transform: translateX(-50%); /* 使用transform属性来将元素向左移动自身宽度的一半，实现自动居中 */
+            left: 50%;
+            transform: translateX(-50%);
             top: 200px;
             font-size: 20px;
-            max-width: 1400px; /* 使用max-width而不是width，确保内容不会超出屏幕 */
-            background-color: wheat; /* 白色背景 */
-            padding: 20px; /* 添加一些内边距，使内容更好看 */
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 添加阴影效果 */
+            max-width: 800px;
+            background-color: whitesmoke;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 20px; /* 每个表格之间的间距 */
+            display: none; /* 初始状态下隐藏 */
         }
-
 
         .header {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 80px;
+            grid-template-columns: 1fr;
+            gap: 10px;
             padding: 10px;
             font-weight: bold;
             border-bottom: 2px solid #000;
-            display: none; /* 初始状态下不可见 */
         }
 
-        li {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 80px; /* 设置列之间的间距 */
-            border: 0px solid #ccc;
-            padding: 10px;
-            margin-bottom: 10px;
-            cursor: pointer; /* 添加手型鼠标指针 */
+        button {
+            z-index: 1;
+            position: relative;
+            font-size: inherit;
+            font-family: inherit;
+            color: white;
+            padding: 0.5em 1em;
+            outline: none;
+            border: none;
+            background-color: hsl(236, 32%, 26%);
+            overflow: hidden;
+            transition: color 0.4s ease-in-out;
         }
 
-        li:hover {
-            background-color: #f0f0f0; /* 鼠标悬停时的背景颜色 */
+        button::before {
+            content: '';
+            z-index: -1;
+            position: absolute;
+            top: 100%;
+            right: 100%;
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+            background-color: #3cefff;
+            transform-origin: center;
+            transform: translate3d(50%, -50%, 0) scale3d(0, 0, 0);
+            transition: transform 0.45s ease-in-out;
         }
 
-        .item-name {
-            grid-column: 1 / 2; /* 占据第一列 */
+        button:hover {
+            cursor: pointer;
+            color: #161616;
         }
 
-        .item-artist {
-            grid-column: 2 / 3; /* 占据第二列 */
-        }
-
-        .item-tag {
-            grid-column: 3 / 4; /* 占据第三列 */
-        }
-
-        .item-release-date {
-            grid-column: 4 / 5; /* 占据第四列 */
+        button:hover::before {
+            transform: translate3d(50%, -50%, 0) scale3d(15, 15, 15);
         }
 
         .tooltip {
@@ -102,41 +215,123 @@
             font-size: 10px;
         }
 
-        li:hover .tooltip {
-            display: block;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        .item-name {
+            display: flex;
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically, if needed */
+            height: 100%; /* Ensure the container has height if aligning vertically */
+            margin: 20px;
+            border: 2px solid #3498db; /* 蓝色边框 */
+            padding: 10px; /* 内边距，可以根据需要调整 */
+            border-radius: 8px; /* 圆角边框，可以根据需要调整 */
+        }
+
+
+        th {
+            background-color: #f2f2f2;
         }
     </style>
+    <!-- Favicons -->
+    <link href="static/assets/img/ico2.ico" rel="icon">
+    <link href="static/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,600,600i,700,700i,900"
+          rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <!--    <link href="static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">-->
+    <link href="static/assets/vendor/icofont/icofont.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/animate.css/animate.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/venobox/venobox.css" rel="stylesheet">
+    <link href="static/assets/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="../static/assets/css/style.css" rel="stylesheet">
 </head>
 <body>
+
+<header id="header">
+    <div class="container">
+        <nav class="nav-menu float-right d-none d-lg-block">
+            <ul>
+                <li class="active"><a href="/index">Main<i class="la la-angle-down"></i></a></li>
+                <li><a href="/music">Recommend</a></li>
+                <li><a href="/choose">Choose</a></li>
+
+            </ul>
+        </nav><!-- .nav-menu -->
+
+    </div>
+</header><!-- End Header -->
+
 <div id="search1">
     <input type="text" id="search_id" placeholder="搜索">
-    <div id="search_flag">
-        <button id="search_button">搜索</button>
-    </div>
+    <span class="bottom"></span>
+    <span class="right"></span>
+    <span class="top"></span>
+    <span class="left"></span>
+    <button id="search_button">搜索</button>
 </div>
 <div id="show">
-    <div class="header">
-        <div>&nbsp;&nbsp;&nbsp;&nbsp;Name</div>
-        <div>&nbsp;&nbsp;&nbsp;Artist</div>
-        <div>&nbsp;Tag</div>
-        <div>Release Date</div>
+    <div id="personalInfo">
+        <div class="header">
+            <div class="center-text">Welcome to the recommender system</div>
+        </div>
+        <div id="infoList"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button id="music_button">Get Recommendation</button>
+        </div>
     </div>
-    <ul id="musicList">
-        <!-- Placeholder for dynamically added list items -->
-    </ul>
+    <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <img src="../static/assets/img/loading.gif" alt="Loading...">
+        <p>Loading...</p>
+    </div>
+    <div id="musicInfo" style="display: none;">
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Artist</th>
+                <th>Tag</th>
+                <th>Date</th>
+                <th>URL</th>
+            </tr>
+            </thead>
+            <tbody id="musicList"></tbody>
+        </table>
+    </div>
 </div>
 <script>
     const account_id = document.getElementById('search_id');
     const submit = document.getElementById('search_button');
+    const music_button = document.getElementById('music_button');
+    const infoListElement = document.getElementById('infoList');
     const musicListElement = document.getElementById('musicList');
     const headerElement = document.querySelector('.header');
+    const showElement = document.getElementById('show');
+    const personalInfoElement = document.getElementById('personalInfo');
+    const musicInfoElement = document.getElementById('musicInfo');
 
     submit.addEventListener('click', function () {
-        musicListElement.innerHTML = '';
+        infoListElement.innerHTML = '';
 
         const account_data = account_id.value;
-        if (account_data.length === 10 && /^\d+$/.test(account_data)) {
-            fetch('/music', {
+        if (/^\d+$/.test(account_data)) {
+            fetch('/search', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -146,57 +341,87 @@
                 .then(response => response.json())
                 .then(data => {
                     console.log('Success:', data);
-                    const musicData = data.music_data;
+                    const personalData = data.personal_info;
 
                     headerElement.style.display = 'grid'; // 显示header行
+                    personalInfoElement.style.display = 'block'; // 显示个人信息
 
-                    musicData.forEach(item => {
-                        const li = document.createElement('li');
+                    const nameDiv = document.createElement('div');
+                    nameDiv.classList.add('item-name');
+                    nameDiv.textContent = personalData !== -1 ? personalData : "Invalid";
+                    infoListElement.appendChild(nameDiv);
 
-                        const itemName = document.createElement('div');
-                        itemName.classList.add('item-name');
-                        itemName.textContent = `${item.name}`;
-                        // 设置点击事件处理函数
-                        itemName.addEventListener('click', function () {
-                            window.location.href = item.url; // 跳转到对应的 url
-                        });
-                        li.appendChild(itemName);
-
-                        const itemArtist = document.createElement('div');
-                        itemArtist.classList.add('item-artist');
-                        itemArtist.textContent = ` ${item.artist}`;
-                        li.appendChild(itemArtist);
-
-                        const itemTag = document.createElement('div');
-                        itemTag.classList.add('item-tag');
-                        itemTag.textContent = `${item.tag}`;
-                        li.appendChild(itemTag);
-
-                        const itemDate = document.createElement('div');
-                        itemDate.classList.add('item-date');
-                        itemDate.textContent = `${item.release_date}`;
-                        li.appendChild(itemDate);
-
-                        // 创建 tooltip
-                        const tooltip = document.createElement('div');
-                        tooltip.classList.add('tooltip');
-                        tooltip.textContent = `Name: ${item.name}\nArtist: ${item.artist}\nTag: ${item.tag}\nRelease_date: ${item.release_date}`;
-                        li.appendChild(tooltip);
-
-                        li.addEventListener('hover', function (event) {
-                            tooltip.style.left = event.clientX + 'px';
-                            tooltip.style.top = event.clientY + 'px';
-                        });
-
-                        musicListElement.appendChild(li);
-                    });
+                    showElement.style.display = 'block'; // 显示整个show div
                 })
                 .catch(error => {
                     console.error('Error:', error);
                 });
         } else {
-            alert('请输入10位数字账号！');
+            alert('请输入数字账号！');
         }
+    });
+
+    const loadingElement = document.getElementById('loading');
+
+    music_button.addEventListener('click', function () {
+        musicListElement.innerHTML = '';
+        loadingElement.style.display = 'block'; // 显示加载组件
+
+        const account_data = account_id.value;
+        fetch('/music', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({account_data: account_data})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                const musicData = data.music_data;
+
+                musicInfoElement.style.display = 'block'; // 显示音乐信息
+
+                musicData.forEach(item => {
+                    const tr = document.createElement('tr');
+
+                    const itemName = document.createElement('td');
+                    itemName.classList.add('item-artist');
+                    itemName.textContent = `${item.name}`;
+                    tr.appendChild(itemName);
+
+                    const itemArtist = document.createElement('td');
+                    itemArtist.classList.add('item-artist');
+                    itemArtist.textContent = `${item.artist}`;
+                    tr.appendChild(itemArtist);
+
+                    const itemTag = document.createElement('td');
+                    itemTag.classList.add('item-tag');
+                    itemTag.textContent = `${item.tag}`;
+                    tr.appendChild(itemTag);
+
+                    const itemDate = document.createElement('td');
+                    itemDate.classList.add('item-release-date');
+                    itemDate.textContent = `${item.release_date}`;
+                    tr.appendChild(itemDate);
+
+                    const itemUrl = document.createElement('td');
+                    const itemLink = document.createElement('a');
+                    itemLink.href = item.url;
+                    itemLink.textContent = "Link";
+                    itemLink.target = "_blank"; // 在新标签页中打开链接
+                    itemUrl.appendChild(itemLink);
+                    tr.appendChild(itemUrl);
+
+                    musicListElement.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                loadingElement.style.display = 'none'; // 隐藏加载组件
+            });
     });
 </script>
 </body>

@@ -1,110 +1,600 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width,initial-scale=1.0">
-        <title>lastfm数据分析</title>
-    </head>
-    <body>
-        <div id="guard">
-            <audio id="audio_player" controls="controls" height="100" width="100">
-                <source src="{{ url_for('static', filename='assets/audio/1.mp3') }}" type="audio/mp3" />
-                <source src="{{ url_for('static', filename='assets/audio/2.mp3') }}" type="audio/mp3" />
-                <source src="{{ url_for('static', filename='assets/audio/3.mp3') }}" type="audio/mp3" />
-            </audio>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LastFM Recommender System</title>
+    <style>
+        header {
+            background-color: #11375e; /* 背景颜色 */
+            color: #333; /* 文字颜色 */
+            padding: 20px; /* 内边距 */
+            text-align: center; /* 文字居中对齐 */
+            font-size: 24px; /* 字体大小 */
+            border-bottom: 1px solid #dee2e6; /* 底部边框 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* 阴影效果 */
+        }
+
+        @keyframes backgroundAnimation {
+            0% {
+                background-color: #B06B9A;
+            }
+            33% {
+                background-color: #B06B9A;
+            }
+            66% {
+                background-color: #715F8F;
+            }
+            100% {
+                background-color: #B06B9A;
+            }
+        }
+
+        body {
+            animation: backgroundAnimation 3s infinite;
+        }
+
+        button {
+            z-index: 1;
+            position: relative;
+            font-size: 1.25em;
+            font-family: inherit;
+            color: white;
+            padding: 0.75em 1.5em;
+            outline: none;
+            border: none;
+            background-color: hsl(236, 32%, 26%);
+            overflow: hidden;
+            transition: color 0.4s ease-in-out;
+        }
+
+        button::before {
+            content: '';
+            z-index: -1;
+            position: absolute;
+            top: 100%;
+            left: 100%;
+            width: 1em;
+            height: 1em;
+            border-radius: 50%;
+            background-color: #3cefff;
+            transform-origin: center;
+            transform: translate3d(-50%, -50%, 0) scale3d(0, 0, 0);
+            transition: transform 0.45s ease-in-out;
+        }
+
+        button:hover {
+            cursor: pointer;
+            color: #161616;
+        }
+
+        button:hover::before {
+            transform: translate3d(-50%, -50%, 0) scale3d(15, 15, 15);
+        }
+
+        /* Main container to align tables */
+        .table-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+
+        /* Container for the three new tables */
+        .newTableContainers {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1600px; /* Adjust as needed */
+
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 1600px; /* Adjust as needed */
+            margin: 0 10px; /* Space between tables */
+        }
+
+
+        /* Style adjustments for individual tables */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px auto;
+            background-color: rgba(255, 255, 255, 0.9); /* White background with 90% opacity */
+            border-radius: 15px; /* Adjust radius as needed */
+            overflow: hidden; /* Ensures the border-radius effect is visible */
+            border: 1px solid rgba(0, 0, 0, 0.5); /* Black border with 50% opacity */
+        }
+
+        th {
+            background-color: rgba(242, 242, 242, 0.8); /* Light gray background with 80% opacity */
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 10px;
+        }
+
+
+        td {
+            cursor: pointer;
+        }
+
+        .selected {
+            background-color: lightblue;
+        }
+
+        .button-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+
+    </style>
+
+    <!-- Favicons -->
+    <link href="static/assets/img/ico1.ico" rel="icon">
+    <link href="static/assets/img/apple-touch-icon.png" rel="apple-touch-icon">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Raleway:300,300i,400,400i,600,600i,700,700i,900"
+          rel="stylesheet">
+
+    <!-- Vendor CSS Files -->
+    <!--    <link href="static/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">-->
+    <link href="static/assets/vendor/icofont/icofont.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/animate.css/animate.min.css" rel="stylesheet">
+    <link href="static/assets/vendor/venobox/venobox.css" rel="stylesheet">
+    <link href="static/assets/vendor/aos/aos.css" rel="stylesheet">
+
+    <!-- Template Main CSS File -->
+    <link href="../static/assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+<header id="header">
+    <div class="container">
+        <nav class="nav-menu float-right d-none d-lg-block">
+            <ul>
+                <li class="active"><a href="/index">Main<i class="la la-angle-down"></i></a></li>
+                <li><a href="/music">Recommend</a></li>
+                <li><a href="/choose">Choose</a></li>
+
+            </ul>
+        </nav><!-- .nav-menu -->
+
+    </div>
+</header><!-- End Header -->
+
+<div class="table-wrapper">
+    <!-- Initial Table -->
+    <div class="table-container">
+        <table id="multiSelectTable">
+            <thead>
+            <tr>
+                <th>Select</th>
+                <th>Tag</th>
+                <th>Select</th>
+                <th>Tag</th>
+                <th>Select</th>
+                <th>Tag</th>
+                <th>Select</th>
+                <th>Tag</th>
+                <th>Select</th>
+                <th>Tag</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td><input type="checkbox" value="Electronic"></td>
+                <td>Electronic</td>
+                <td><input type="checkbox" value="Rock"></td>
+                <td>Rock</td>
+                <td><input type="checkbox" value="Hip-hop"></td>
+                <td>Hip-hop</td>
+                <td><input type="checkbox" value="Indie"></td>
+                <td>Indie</td>
+                <td><input type="checkbox" value="Jazz"></td>
+                <td>Jazz</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" value="Reggae"></td>
+                <td>Reggae</td>
+                <td><input type="checkbox" value="British"></td>
+                <td>British</td>
+                <td><input type="checkbox" value="Punk"></td>
+                <td>Punk</td>
+                <td><input type="checkbox" value="80s"></td>
+                <td>80s</td>
+                <td><input type="checkbox" value="Dance"></td>
+                <td>Dance</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" value="Acoustic"></td>
+                <td>Acoustic</td>
+                <td><input type="checkbox" value="Rnb"></td>
+                <td>Rnb</td>
+                <td><input type="checkbox" value="Metal"></td>
+                <td>Metal</td>
+                <td><input type="checkbox" value="Rap"></td>
+                <td>Rap</td>
+                <td><input type="checkbox" value="Classical"></td>
+                <td>Classical</td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" value="Alternative"></td>
+                <td>Alternative</td>
+                <td><input type="checkbox" value="Blues"></td>
+                <td>Blues</td>
+                <td><input type="checkbox" value="Country"></td>
+                <td>Country</td>
+                <td><input type="checkbox" value="Hardcore"></td>
+                <td>Hardcore</td>
+                <td></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="button-container">
+            <button id="chooseButton">Choose</button>
         </div>
-        <div id="choise">
-            <button type="button" id="button_1" data-feedback="1">A&nbsp; like</button>
-            <button type="button" id="button_2" data-feedback="0">B&nbsp; just&nbsp; so&nbsp; so</button>
-            <button type="button" id="button_3" data-feedback="-1">C&nbsp; dislike</button>
-         </div>
-        <div id="end">
-            <button type="button">查看结果</button>
-        </div>
-    </body>
+    </div>
+
+    <!-- New Tables -->
+    <div class="newTableContainers">
+        <div class="table-container" id="newTableContainer1"></div>
+        <div class="table-container" id="newTableContainer2"></div>
+        <div class="table-container" id="newTableContainer3"></div>
+        <table id="songTable">
+            <thead>
+            <tr>
+                <th>Song Name</th>
+                <th>Song URL</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Song data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+
 <script>
-    let guard = document.getElementById("guard");
-    let button_1 = document.getElementById("button_1");
-    let button_2 = document.getElementById("button_2");
-    let button_3 = document.getElementById("button_3");
-    let num = 0;
-    
-    const buttons = document.querySelectorAll('#choise button');
-    const audioPlayer = document.getElementById('audio_player');
-    const viewResultBtn = document.getElementById('end')
+    let tags = [];
+    let stags = [];
+    let decades = [];
+    let artist_str = "";
+    let artists = [];
 
-    buttons.forEach(button => {
-    button.addEventListener('click', function() {
-        const feedback = this.getAttribute('data-feedback');
-        console.log(feedback)
-        const audioSrc = audioPlayer.querySelector('source').src;
-        console.log(audioSrc)
+    // Function to get selected items from a specified table
+    function getSelectedItems(tableId) {
+        const table = document.getElementById(tableId);
+        const checkboxes = table.querySelectorAll('input[type="checkbox"]:checked');
+        return Array.from(checkboxes).map(checkbox => checkbox.value);
+    }
 
+    // Function to create the first new table
+    function createFirstNewTable(data) {
+        const container = document.getElementById('newTableContainer1');
+        container.innerHTML = ''; // Clear previous table if any
+
+        const table = document.createElement('table');
+        table.id = 'newTable1';
+        table.border = '1';
+        table.style.width = '100%';
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const th1 = document.createElement('th');
+        th1.textContent = 'Select';
+        const th2 = document.createElement('th');
+        th2.textContent = 'Tag';
+
+        headRow.appendChild(th1);
+        headRow.appendChild(th2);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            const td1 = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = item;
+            td1.appendChild(checkbox);
+
+            const td2 = document.createElement('td');
+            td2.textContent = item;
+
+            row.appendChild(td1);
+            row.appendChild(td2);
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+
+        // Add button below the table
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        const button = document.createElement('button');
+        button.id = 'newChooseButton1';
+        button.textContent = 'Choose';
+        buttonContainer.appendChild(button);
+        container.appendChild(buttonContainer);
+
+        // Add event listener to the new button
+        document.getElementById('newChooseButton1').addEventListener('click', function () {
+            const selectedItems = getSelectedItems('newTable1');
+            if (selectedItems.length === 0) {
+        alert('Please select at least one item.');
+        return; // Stop further execution if no items are selected
+    }
+            stags = selectedItems;
+            console.log(`Selected items from newTable1:`, selectedItems);
+
+            // Make the API call for the next table
+            fetch('/stag', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({stags: stags, tags: tags})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API response for second table:', data);
+                    if (data.success) {
+                        createSecondNewTable(data.decades);
+                        createSongTable(data.music_data);
+                    } else {
+                        console.error('API response indicates failure');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    // Function to create the second new table
+    function createSecondNewTable(data) {
+        const container = document.getElementById('newTableContainer2');
+        container.innerHTML = ''; // Clear previous table if any
+
+        const table = document.createElement('table');
+        table.id = 'newTable2';
+        table.border = '1';
+        table.style.width = '100%';
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const th1 = document.createElement('th');
+        th1.textContent = 'Select';
+        const th2 = document.createElement('th');
+        th2.textContent = 'Decade';
+
+        headRow.appendChild(th1);
+        headRow.appendChild(th2);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            const td1 = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = item;
+            td1.appendChild(checkbox);
+
+            const td2 = document.createElement('td');
+            td2.textContent = item;
+
+            row.appendChild(td1);
+            row.appendChild(td2);
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+
+        // Add button below the table
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        const button = document.createElement('button');
+        button.id = 'newChooseButton2';
+        button.textContent = 'Choose';
+        buttonContainer.appendChild(button);
+        container.appendChild(buttonContainer);
+
+        // Add event listener to the new button
+        document.getElementById('newChooseButton2').addEventListener('click', function () {
+            const selectedItems = getSelectedItems('newTable2');
+            if (selectedItems.length === 0) {
+        alert('Please select at least one item.');
+        return; // Stop further execution if no items are selected
+    }
+            decades = selectedItems;
+            console.log(`Selected items from newTable2:`, selectedItems);
+
+            // Make the API call for the next table
+            fetch('/decade', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({decades: selectedItems, tags: tags, stags: stags})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API response for third table:', data);
+                    if (data.success) {
+                        artist_str = data.artists
+                        temp = artist_str.split(", ")
+                        createThirdNewTable(temp);
+                        createSongTable(data.music_data);
+                    } else {
+                        console.error('API response indicates failure');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    // Function to create the third new table
+    function createThirdNewTable(data) {
+        const container = document.getElementById('newTableContainer3');
+        container.innerHTML = ''; // Clear previous table if any
+
+        const table = document.createElement('table');
+        table.id = 'newTable3';
+        table.border = '1';
+        table.style.width = '100%';
+
+        const thead = document.createElement('thead');
+        const headRow = document.createElement('tr');
+        const th1 = document.createElement('th');
+        th1.textContent = 'Select';
+        const th2 = document.createElement('th');
+        th2.textContent = 'Artist';
+
+        headRow.appendChild(th1);
+        headRow.appendChild(th2);
+        thead.appendChild(headRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement('tbody');
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            const td1 = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = item;
+            td1.appendChild(checkbox);
+
+            const td2 = document.createElement('td');
+            td2.textContent = item;
+
+            row.appendChild(td1);
+            row.appendChild(td2);
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(tbody);
+        container.appendChild(table);
+
+        // Add button below the table
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'button-container';
+        const button = document.createElement('button');
+        button.id = 'newChooseButton3';
+        button.textContent = 'Choose';
+        buttonContainer.appendChild(button);
+        container.appendChild(buttonContainer);
+
+        // Add event listener to the new button
+        document.getElementById('newChooseButton3').addEventListener('click', function () {
+            const selectedItems = getSelectedItems('newTable3');
+            if (selectedItems.length === 0) {
+        alert('Please select at least one item.');
+        return; // Stop further execution if no items are selected
+    }
+            artists = selectedItems;
+            console.log(`Selected items from newTable3:`, selectedItems);
+
+            // Make the final API call to get song recommendations
+            fetch('/artist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    artists: selectedItems,
+                    decades: decades,
+                    tags: tags,
+                    stags: stags,
+                    artist_str: artist_str
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('API response for songs:', data);
+                    if (data.success) {
+                        createSongTable(data.music_data);
+                    } else {
+                        console.error('API response indicates failure');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    }
+
+    // Function to create the song table
+    function createSongTable(data) {
+        const table = document.getElementById('songTable');
+        const tbody = table.querySelector('tbody');
+        tbody.innerHTML = ''; // Clear previous table if any
+
+        data.forEach(song => {
+            const row = document.createElement('tr');
+            const td1 = document.createElement('td');
+            td1.textContent = song.name;
+
+            const td2 = document.createElement('td');
+            const link = document.createElement('a');
+            link.href = song.url;
+            link.textContent = 'Link';
+            link.target = '_blank';
+            td2.appendChild(link);
+
+            row.appendChild(td1);
+            row.appendChild(td2);
+            tbody.appendChild(row);
+        });
+    }
+
+    // Event listener for the initial Choose button
+    document.getElementById('chooseButton').addEventListener('click', function () {
+        const selectedItems = getSelectedItems('multiSelectTable');
+        if (selectedItems.length === 0) {
+        alert('Please select at least one item.');
+        return; // Stop further execution if no items are selected
+    }
+        tags = selectedItems;
+        console.log('Selected items from multiSelectTable:', selectedItems);
+
+        // Make the API call to get the next table data
         fetch('/choose', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                feedback: feedback,
-                audioSrc: audioSrc
+            body: JSON.stringify({tags: selectedItems})
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('API response for first new table:', data);
+                if (data.success) {
+                    createFirstNewTable(data.stags);
+                    createSongTable(data.music_data);
+                } else {
+                    console.error('API response indicates failure');
+                }
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-            num++;
-            console.log(num)
-            if (num > 10) {
-                viewResultBtn.style.display = 'inline-block'; // Show the button
-            }
-            // 这里可以处理返回的数据，例如更新页面
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            .catch(error => {
+                console.error('Error:', error);
+            });
     });
-});
-    </script>
-
-<style>
-    #guard{
-        position: absolute;
-        left: 680px;
-        top: 360px;
-        font-size: 25px;
-    }
-    #choise{
-        position: absolute;
-        left: 500px;
-        top: 450px;
-    }
-    #button_1{
-        position: absolute;
-        left: 60px;
-        top: 30px;
-    }
-    #button_2{
-        position: absolute;
-        left: 260px;
-        top: 30px;
-    }
-    #button_3{
-        position: absolute;
-        left: 460px;
-        top: 30px;
-    }
-    button{
-        height: 70px;
-        width: 150px;
-        font-size: 20px;
-    }
-    #end{
-        position: absolute;
-        left: 760px;
-        top: 600px;
-        display: none;
-    }
-</style>
+</script>
+</body>
 </html>
