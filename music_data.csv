@@ -1,4 +1,0 @@
-name,url,artist,listeners,release_date,tracks,tag
-Song A,http://example.com/song_a,Artist ABB,12345,2023-01-01,10,pop
-Song B,http://example.com/song_b,Artist B,54321,2023-02-01,12,rock
-Song C,http://example.com/song_c,Artist C,67890,2023-03-01,8,jazz
