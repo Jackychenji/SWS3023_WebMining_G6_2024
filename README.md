@@ -8,6 +8,10 @@ Additionally, the project proposes a cost-effective VIP sales model that groups 
 A web-based front-end demonstrates the recommendation system, allowing users to experience personalized playlists through an interactive interface accessible via QR code. 
 By integrating multi-platform data, hybrid algorithms, and market-focused pricing strategies, the work offers a scalable framework for improving music service personalization and affordability in China’s digital entertainment landscape.
 
+## Demo Video
+
+[NUS SWS3023 Web Mining project 音乐推荐系统&分类VI](https://www.bilibili.com/video/BV1rNvYeGE2G/?buvid=Y54A46580D7AC43E4A118D1E6BA2767F51D3&from_spmid=dt.space-dt.video.0&is_story_h5=false&mid=WgXk8XLlrhLOh8LxdRof0g%3D%3D&plat_id=116&share_from=ugc&share_medium=iphone&share_plat=ios&share_session_id=AB63A367-1945-4DB3-A46D-E1A51F84708F&share_source=COPY&share_tag=s_i&spmid=united.player-video-detail.0.0&timestamp=1740105284&unique_k=JFaRiMR&up_id=51771579&vd_source=b2d0b0aeed1ef4af8c89433d521bc0fb)
+
 ## Our Poster
 
 ![](https://github.com/Jackychenji/SWS3023_WebMining_G6_2024/blob/main/Posteter.jpg)
